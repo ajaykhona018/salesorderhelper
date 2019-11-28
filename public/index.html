@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sales Order HELPER</title>
+
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <link rel="stylesheet" href="./index.css" />
+</head>
+
+<body ng-app="salesOrderApp" ng-controller="saleOrderAppCtrl" class="grey lighten-4">
+
+    <!-- HEADER - NAVBAR -->
+    <nav>
+        <div class="nav-wrapper teal">
+            <a href="#" class="brand-logo center">SALES ORDER HELPER</a>
+            <ul id="nav-mobile" class="left hide-on-med-and-down">
+                <!-- <li><a href="sass.html">Sass</a></li>
+                <li><a href="badges.html">Components</a></li>
+                <li><a href="collapsible.html">JavaScript</a></li> -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ORDER HEADER -->
+    <section class="container" id="top">
+        <div class="card">
+            <div class="card-content ">
+                <div class="row">
+                    <div class="col s2 teal-text bold">
+                        ORDER ID:
+                    </div>
+                    <div class="col s2">
+                        {{currentOrder.ORDER_ID}}
+                    </div>
+                    <div class="col s2 teal-text bold">
+                        DATE:
+                    </div>
+                    <div class="col s2">
+                        {{getDateString(currentOrder.DATE)}}
+                    </div>
+                </div>
+
+                <div class="row my-auto">
+                    <div class="col s2 teal-text bold">
+                        COMPANY:
+                    </div>
+                    <div class="col s10">
+                        <input type="text" class="company" placeholder="Enter Company" ng-model="currentOrder.COMPANY">
+                    </div>
+                </div>
+            </div>
+            <div class="card-action">
+                <a class="waves-effect waves-white btn-flat teal-text bold" ng-click="save()">{{currentOrder.UPDATE_MODE?'Save Changes':'Create Order'}}</a>
+                <a class="waves-effect waves-white btn-flat red-text bold" ng-click="openOrder(activeOrderIndex)">REFRESH</a>
+                <a class="waves-effect waves-white btn-flat orange-text bold modal-trigger" data-target="orderListModal">OPEN EXISTING ORDER</a>
+                <a class="waves-effect waves-white btn-flat blue-text bold" href="./upload-file">UPLOAD DATA</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TABS -->
+    <div class="row" ng-show="!hdrLoader">
+        <div class="col s12">
+            <ul class="tabs grey">
+                <li class="tab col s4 ">
+                    <a class="active white-text bold" href="#upload">Uploaded Data</a>
+                </li>
+                <li class="tab col s4">
+                    <a class="white-text bold" href="#review ">Review</a>
+                </li>
+                <li class="tab col s4">
+                    <a class="white-text bold" href="#spectrum">Spectrum</a>
+                </li>
+            </ul>
+        </div>
+        <!-- UPLOADED DATA - DATA MODIFICATIONS -->
+        <div id="upload" class="col s12">
+            <div class="row card" ng-repeat="data in currentOrder.DATA">
+                <div class="card-content">
+                    <div class="col s6 order-details">
+                        <div class="row">
+                            <div class="col s1">{{($index + 1)}}</div>
+                            <div class="col s5">{{data.BRAND}}</div>
+                            <div class="col s5">{{data.GENERIC}}</div>
+                            <div class="col s1">{{data.QTY}}</div>
+                        </div>
+                    </div>
+
+                    <div class="col s6 order-suggestions">
+                        <div class="row suggestion" ng-repeat="suggestion in data.suggestions">
+                            <div class="col s1 cursor" ng-click="editSuggestion(data,$index)">
+                                <i class="material-icons">edit</i>
+                            </div>
+                            <div class="col s1">
+                                <p>
+                                    <input type="checkbox" id={{data.BRAND+suggestion.ITEM_ID}} ng-model="suggestion.selected" />
+                                    <label for={{data.BRAND+suggestion.ITEM_ID}}></label>
+                                </p>
+                            </div>
+                            <div class="col s8 item-details">
+                                <p class="cursor" ng-click="toggleSelect(suggestion, $event)">{{suggestion.NAME}}</p>
+                                <div class="info-tooltip z-depth-5" ng-show="suggestion.tooltip">
+                                    <div class="row">
+                                        <div class="col s6">
+                                            Item ID:
+                                        </div>
+                                        <div class="col s6">
+                                            {{suggestion.ITEM_ID}}
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col s6">
+                                            Packing/Unit:
+                                        </div>
+                                        <div class="col s6">
+                                            {{suggestion.PACKING}} {{suggestion.UNIT}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col s6">
+                                            Vendor:
+                                        </div>
+                                        <div class="col s6">
+                                            {{suggestion.VENDOR}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col s6">
+                                            Source:
+                                        </div>
+                                        <div class="col s6">
+                                            {{suggestion.SOURCE}}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col s1 item-details">
+                                <p>{{suggestion.QTY}}</p>
+                            </div>
+                            <div class="col s1 cursor info">
+                                <i class="material-icons" ng-class="suggestion.tooltip?'teal-text bold':''" ng-click="suggestion.tooltip = !suggestion.tooltip">info_outline</i>
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <button ng-click="addSuggestion(data)" class="waves-effect waves-white btn-flat red-text bold modal-trigger" data-target="suggestionModal">
+                                <i class="material-icons left">add</i> Add Item
+                            </button>
+                            <button ng-click="fetchMoreSuggestions($index)" class="waves-effect waves-white btn-flat cyan-text">
+                                <i class="material-icons left">search</i> More Suggestions
+                            </button>
+                        </div>
+
+                        <div class="progress" ng-show="data.loaded == false">
+                            <div class="indeterminate"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div id="review" class="col s12">
+            <ul class="collection">
+                <li class="collection-item row" ng-repeat="data in currentOrder.DATA">
+                    <div class="col s6 order-details">
+                        <div class="row">
+                            <div class="col s1">
+                                <p>{{($index + 1)}}</p>
+                            </div>
+                            <div class="col s5">
+                                <p>{{data.BRAND}}</p>
+                            </div>
+                            <div class="col s5">
+                                <p>{{data.GENERIC}}</p>
+                            </div>
+                            <div class="col s1">
+                                <p>{{data.QTY}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="col s6 order-suggestions">
+                        <li class="row suggestion" ng-repeat="suggestion in data.suggestions" ng-show="suggestion.selected">
+                            <!-- <div class="col s1 cursor" ng-click="editSuggestion(data,$index)">
+                                <p><i class="material-icons">edit</i></p>
+                            </div> -->
+                            <div class="col s8 item-details">
+                                <p>{{suggestion.NAME}}</p>
+                                <p class="grey-text">
+                                    {{suggestion.QTY + " " + suggestion.PACKING + " "+ suggestion.UNIT}}
+                                </p>
+                            </div>
+                            <div class="col s3 item-details">
+                                <p>{{suggestion.VENDOR}}</p>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div id="spectrum" class="col s12">
+            <ul class="collection with-header">
+                <li class="collection-header white-text grey">
+                    <h6 class="row">
+                        <div class="col s1">Item ID</div>
+                        <div class="col s5">Item Name</div>
+                        <div class="col s1">Quantity</div>
+                        <div class="col s1">Packing</div>
+                        <div class="col s2">Vendor</div>
+                        <div class="col s1">Source</div>
+                    </h6>
+                </li>
+                <div ng-repeat="data in currentOrder.DATA" ng-show="data.suggestions.length!=0">
+                    <li ng-repeat="suggestion in data.suggestions" class="row collection-item" ng-if="suggestion.selected">
+                        <div class="col s1">{{suggestion.ITEM_ID}}</div>
+                        <div class="col s5">{{suggestion.NAME}}</div>
+                        <div class="col s1">{{suggestion.QTY}}</div>
+                        <div class="col s1">{{suggestion.PACKING}}</div>
+                        <div class="col s2">{{suggestion.VENDOR}}</div>
+                        <div class="col s1">{{suggestion.SOURCE}}</div>
+                    </li>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ALL MODAL STRUCTURES -->
+
+    <!-- OPEN ORDER LIST  MODAL -->
+    <div id="orderListModal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <h4>Select an existing order</h4>
+            <ul class="collection">
+                <li class="collection-item cursor" ng-repeat="order in orders" ng-click="openOrder($index)">
+                    <p>
+                        <bold>Order ID: {{order.ORDER_ID}}</bold>
+                        <br>{{getDateString(order.DATE)}}
+                        <br> {{order.COMPANY}}
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ADD/UPDATE SUGGESTIONS MODAL -->
+    <!-- Modal Structure -->
+    <div id="suggestionModal" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4>Add/Update Item</h4>
+            <div class="row">
+                <form class="col s12">
+                    <!-- <div class="row">
+                        <div class="input-field col s12">
+                            <input id="item" type="text" ng-model="mSuggestionData.NAME" class="validate">
+                            <label class="active" for="item">Item</label>
+                        </div>
+                    </div> -->
+
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <!-- <i class="material-icons prefix">textsms</i> -->
+                            <input type="text" placeholder="Type atleast 3 characters for AutoSuggest" id="item" class="autocomplete" ng-model="mSuggestionData.NAME">
+                            <label for="item" class="active">Item</label>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="input-field col s4">
+                            <input id="qty" placeholder="Enter quantity of Item wrt Packing" type="text" ng-model="mSuggestionData.QTY" class="validate">
+                            <label for="qty"  class="active">Quantity</label>
+                        </div>
+                        <div class="input-field col s4">
+                            <input id="packing" placeholder="Enter packing relative to quantity" type="text" ng-model="mSuggestionData.PACKING" class="validate">
+                            <label for="packing"  class="active">Packing</label>
+                        </div>
+                        <div class="input-field col s4">
+                            <input id="unit" type="text" placeholder="Enter Unit of Measure for the quantity" ng-model="mSuggestionData.UNIT" class="validate">
+                            <label for="unit">Unit</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <input id="vendor" type="text" placeholder="Enter the name of the Supplier" ng-model="mSuggestionData.VENDOR" class="validate">
+                            <label for="vendor">Vendor</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="modal-action modal-close waves-effect waves-teal btn white-text bold" ng-click="saveSuggestion()">{{mSuggestionIndex == -1 ? 'Add Item': 'Update Item'}}</a>
+        </div>
+    </div>
+
+    <!-- HEADER LOADER -->
+    <div class="header-pane" ng-show="hdrLoader">
+        <div class="preloader-wrapper big active container">
+            <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                    <div class="circle"></div>
+                </div>
+                <div class="gap-patch">
+                    <div class="circle"></div>
+                </div>
+                <div class="circle-clipper right">
+                    <div class="circle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCROLL TOP -->
+    <div class="fixed-action-btn" id="bTop">
+        <a class="btn-floating btn-large red" href="#top">
+            <i class="large material-icons">arrow_upward</i>
+        </a>
+    </div>
+    <script type="text/javascript " src="https://code.jquery.com/jquery-3.2.1.min.js "></script>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js "></script>
+    <script src="./index.js "></script>
+</body>
+
+</html>

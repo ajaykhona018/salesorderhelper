@@ -1,0 +1,8 @@
+node_modules
+const con = mysql.createConnection({
+    host: '116.206.105.72',
+    // port: '2082',
+    user: 'unichwmn_admin',
+    password: 'DisIs4Admin',
+    database: 'unichwmn_salesorderhelper'
+});

@@ -1,0 +1,59 @@
+html, body{
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.cursor{
+    cursor: pointer;
+}
+.tabs .indicator{
+    background-color: white;
+}
+.bold{
+    font-weight: bold;
+}
+.my-auto{
+    margin: 0 auto;
+}
+
+.item-details{
+    position: relative;
+}
+.info-tooltip{
+    position: absolute;
+    top: -2em;
+    right: 0;
+    background: rgba(100, 100, 100, .9);
+    /* border-radius: 1em; */
+    padding: .8em;
+    color: white;
+    z-index: 100;
+}
+
+
+.header-pane{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000000;
+    background: rgba(220, 220, 220, .6);
+}
+.header-pane .preloader-wrapper{
+    position: relative;
+    top: 45%;
+    left: 45%;
+
+}
+
+#bTop{
+    opacity: .7;
+}
+
+#bTop:hover{
+    opacity: 1;
+}
+
+#orderListModal{
+    max-height: 85%;
+}
